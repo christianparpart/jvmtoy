@@ -3,3 +3,9 @@
 *.jar
 *.s
 *.ll
+.*.sw?
+CMakeCache.txt
+CMakeFiles
+*.o
+cmake_install.cmake
+Makefile
