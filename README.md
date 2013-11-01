@@ -39,14 +39,8 @@ This may be some loosely defined priority list on what would have to be implemen
 2. functional type system (including type checking)
 3. exception handling
 4. functional `System.out.println()`
-5. `java.lang.reflect.*`
-6. `java.lang.Thread` and related
-7. basic JIT compiling via LLVM (-Xllvm to enable it)
-8. basic JIT compiling for x86-64 by hand
-
-#### Toy-Project Names
-
-- jvmtoy
-- jvmtoylet
-- jarheadvm
-
+5. basic JNI, maybe let libjvmrt use this to expose system implementations, too
+6. `java.lang.reflect.*`
+7. `java.lang.Thread` and related
+8. basic JIT compiling via LLVM (-Xllvm to enable it)
+9. basic JIT compiling for x86-64 by hand

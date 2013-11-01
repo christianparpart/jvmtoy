@@ -1,4 +1,7 @@
 public class Test {
+	public Test() {
+	}
+
 	public static void main(String[] args) {
 		System.out.println("Hello, World");
 
@@ -23,5 +26,15 @@ public class Test {
 			System.out.println(i);
 		}
 		return y;
+	}
+
+	public native void fnord();
+	public native void fnord(int i);
+	public native void fnord(int i, String s);
+	public native String fnord2();
+	public native String fnord2(int i);
+
+	static {
+		System.loadLibrary("fnord");
 	}
 };
