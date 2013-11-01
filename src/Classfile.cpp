@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <vector>
 
 enum class ConstantTag {
 	Class = 7,
@@ -21,8 +22,30 @@ enum class ConstantTag {
 	InvokeDynamic = 18,
 };
 
+class Constant {
+};
+
+class ConstantPool {
+	std::vector<Constant*> pool;
+
+public:
+	ConstantPool() {
+	}
+
+	~ConstantPool() {
+	}
+
+	void resize(size_t size) {
+		pool.resize(size);
+	}
+
+	Constant* operator[](size_t id) const { return pool[id]; }
+};
+
 class Classfile {
 public:
+	ConstantPool constantPool;
+
 	void open(const char* filename);
 };
 
@@ -32,7 +55,7 @@ void Classfile::open(const char* filename)
 	FILE* fp = fopen(filename, "rb");
 	assert(fp != nullptr);
 
-	auto read8 = [&]() -> uint8_t { return fgetc(fp); };
+	auto read8  = [&]() -> uint8_t { return fgetc(fp); };
 	auto read16 = [&]() -> uint16_t { return (read8() << 8) | read8(); };
 	auto read32 = [&]() -> uint32_t { return (read16() << 16) | read16(); };
 
@@ -101,10 +124,11 @@ void Classfile::open(const char* filename)
 			case ConstantTag::MethodType:
 				read16(); // descriptor index
 				break;
-			case ConstantTag::InvokeDynamic:
-				read16();
-				read16();
+			case ConstantTag::InvokeDynamic: {
+				uint16_t bootstrapMethodAttrIndex = read16();
+				uint16_t nameAndTypeIndex = read16();
 				break;
+			}
 			default: {
 				break;
 			}

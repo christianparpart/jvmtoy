@@ -1,7 +1,4 @@
-*.java
-*.class
 *.jar
-*.s
 *.ll
 .*.sw?
 CMakeCache.txt
