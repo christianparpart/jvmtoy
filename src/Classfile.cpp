@@ -22,7 +22,28 @@ enum class ConstantTag {
 	InvokeDynamic = 18,
 };
 
-class Constant {
+enum class AccessFlag {
+	Public      = 0x0001,
+	Final       = 0x0010,
+	Super       = 0x0020,
+	Interactive = 0x0200,
+	Abstract    = 0x0400,
+	Synthetic   = 0x1000,
+	Annotation  = 0x2000,
+	Enum        = 0x4000,
+};
+
+uint32_t operator|(AccessFlag a, AccessFlag b) {
+	return ((uint32_t)a) | ((uint32_t)b);
+}
+
+struct Constant {
+	uint8_t tag;
+};
+
+struct Utf8Const : public Constant {
+	uint16_t length;
+	uint8_t* data;
 };
 
 class ConstantPool {
