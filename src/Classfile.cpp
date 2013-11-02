@@ -213,6 +213,6 @@ void Classfile::open(const char* filename)
 int main(int argc, const char* argv[])
 {
 	Classfile c;
-	c.open(argc == 2 ? argv[1] : "Test.class");
+	c.open(argc == 2 ? argv[1] : "tests/Test.class");
 	return 0;
 }
