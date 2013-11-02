@@ -1,6 +1,6 @@
 Classfile /home/trapni/projects/jvmtoy/tests/Test.class
-  Last modified Nov 1, 2013; size 948 bytes
-  MD5 checksum 3cc551b2e1869b4424d36c93e2096041
+  Last modified Nov 2, 2013; size 1003 bytes
+  MD5 checksum ce9ea195ebe10cca246d4f5f9ff067a6
   Compiled from "Test.java"
 public class Test
   SourceFile: "Test.java"
@@ -8,56 +8,60 @@ public class Test
   major version: 51
   flags: ACC_PUBLIC, ACC_SUPER
 Constant pool:
-   #1 = Methodref          #12.#32        //  java/lang/Object."<init>":()V
-   #2 = Fieldref           #33.#34        //  java/lang/System.out:Ljava/io/PrintStream;
-   #3 = String             #35            //  Hello, World
-   #4 = Methodref          #36.#37        //  java/io/PrintStream.println:(Ljava/lang/String;)V
-   #5 = Class              #38            //  Test
-   #6 = Methodref          #5.#32         //  Test."<init>":()V
-   #7 = Methodref          #5.#39         //  Test.test:()V
-   #8 = Methodref          #5.#40         //  Test.testfunc:(I)I
-   #9 = Methodref          #36.#41        //  java/io/PrintStream.println:(I)V
-  #10 = String             #23            //  fnord
-  #11 = Methodref          #33.#42        //  java/lang/System.loadLibrary:(Ljava/lang/String;)V
-  #12 = Class              #43            //  java/lang/Object
-  #13 = Utf8               <init>
-  #14 = Utf8               ()V
-  #15 = Utf8               Code
-  #16 = Utf8               LineNumberTable
-  #17 = Utf8               main
-  #18 = Utf8               ([Ljava/lang/String;)V
-  #19 = Utf8               test
-  #20 = Utf8               testfunc
-  #21 = Utf8               (I)I
-  #22 = Utf8               StackMapTable
-  #23 = Utf8               fnord
-  #24 = Utf8               (I)V
-  #25 = Utf8               (ILjava/lang/String;)V
-  #26 = Utf8               fnord2
-  #27 = Utf8               ()Ljava/lang/String;
-  #28 = Utf8               (I)Ljava/lang/String;
-  #29 = Utf8               <clinit>
-  #30 = Utf8               SourceFile
-  #31 = Utf8               Test.java
-  #32 = NameAndType        #13:#14        //  "<init>":()V
-  #33 = Class              #44            //  java/lang/System
-  #34 = NameAndType        #45:#46        //  out:Ljava/io/PrintStream;
-  #35 = Utf8               Hello, World
-  #36 = Class              #47            //  java/io/PrintStream
-  #37 = NameAndType        #48:#49        //  println:(Ljava/lang/String;)V
-  #38 = Utf8               Test
-  #39 = NameAndType        #19:#14        //  test:()V
-  #40 = NameAndType        #20:#21        //  testfunc:(I)I
-  #41 = NameAndType        #48:#24        //  println:(I)V
-  #42 = NameAndType        #50:#49        //  loadLibrary:(Ljava/lang/String;)V
-  #43 = Utf8               java/lang/Object
-  #44 = Utf8               java/lang/System
-  #45 = Utf8               out
-  #46 = Utf8               Ljava/io/PrintStream;
-  #47 = Utf8               java/io/PrintStream
-  #48 = Utf8               println
-  #49 = Utf8               (Ljava/lang/String;)V
-  #50 = Utf8               loadLibrary
+   #1 = Methodref          #18.#38        //  java/lang/Object."<init>":()V
+   #2 = Fieldref           #39.#40        //  java/lang/System.out:Ljava/io/PrintStream;
+   #3 = String             #41            //  Hello, World
+   #4 = Methodref          #42.#43        //  java/io/PrintStream.println:(Ljava/lang/String;)V
+   #5 = Class              #44            //  Test
+   #6 = Methodref          #5.#38         //  Test."<init>":()V
+   #7 = Methodref          #5.#45         //  Test.test:()V
+   #8 = Long               -889275714l
+  #10 = Methodref          #5.#46         //  Test.testfunc:(J)J
+  #11 = Methodref          #42.#47        //  java/io/PrintStream.println:(J)V
+  #12 = Long               -1l
+  #14 = Long               2l
+  #16 = String             #29            //  fnord
+  #17 = Methodref          #39.#48        //  java/lang/System.loadLibrary:(Ljava/lang/String;)V
+  #18 = Class              #49            //  java/lang/Object
+  #19 = Utf8               <init>
+  #20 = Utf8               ()V
+  #21 = Utf8               Code
+  #22 = Utf8               LineNumberTable
+  #23 = Utf8               main
+  #24 = Utf8               ([Ljava/lang/String;)V
+  #25 = Utf8               test
+  #26 = Utf8               testfunc
+  #27 = Utf8               (J)J
+  #28 = Utf8               StackMapTable
+  #29 = Utf8               fnord
+  #30 = Utf8               (I)V
+  #31 = Utf8               (ILjava/lang/String;)V
+  #32 = Utf8               fnord2
+  #33 = Utf8               ()Ljava/lang/String;
+  #34 = Utf8               (I)Ljava/lang/String;
+  #35 = Utf8               <clinit>
+  #36 = Utf8               SourceFile
+  #37 = Utf8               Test.java
+  #38 = NameAndType        #19:#20        //  "<init>":()V
+  #39 = Class              #50            //  java/lang/System
+  #40 = NameAndType        #51:#52        //  out:Ljava/io/PrintStream;
+  #41 = Utf8               Hello, World
+  #42 = Class              #53            //  java/io/PrintStream
+  #43 = NameAndType        #54:#55        //  println:(Ljava/lang/String;)V
+  #44 = Utf8               Test
+  #45 = NameAndType        #25:#20        //  test:()V
+  #46 = NameAndType        #26:#27        //  testfunc:(J)J
+  #47 = NameAndType        #54:#56        //  println:(J)V
+  #48 = NameAndType        #57:#55        //  loadLibrary:(Ljava/lang/String;)V
+  #49 = Utf8               java/lang/Object
+  #50 = Utf8               java/lang/System
+  #51 = Utf8               out
+  #52 = Utf8               Ljava/io/PrintStream;
+  #53 = Utf8               java/io/PrintStream
+  #54 = Utf8               println
+  #55 = Utf8               (Ljava/lang/String;)V
+  #56 = Utf8               (J)V
+  #57 = Utf8               loadLibrary
 {
   public Test();
     flags: ACC_PUBLIC
@@ -102,91 +106,101 @@ Constant pool:
     flags: ACC_PUBLIC
     LineNumberTable:
       line 13: 0
-      line 14: 7
-      line 15: 14
+      line 14: 8
+      line 15: 15
     Code:
-      stack=2, locals=2, args_size=1
+      stack=3, locals=3, args_size=1
          0: aload_0       
-         1: bipush        42
-         3: invokevirtual #8                  // Method testfunc:(I)I
-         6: istore_1      
-         7: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-        10: iload_1       
-        11: invokevirtual #9                  // Method java/io/PrintStream.println:(I)V
-        14: return        
+         1: ldc2_w        #8                  // long -889275714l
+         4: invokevirtual #10                 // Method testfunc:(J)J
+         7: lstore_1      
+         8: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        11: lload_1       
+        12: invokevirtual #11                 // Method java/io/PrintStream.println:(J)V
+        15: return        
       LineNumberTable:
         line 13: 0
-        line 14: 7
-        line 15: 14
+        line 14: 8
+        line 15: 15
 
-  public int testfunc(int);
+  public long testfunc(long);
     flags: ACC_PUBLIC
     LineNumberTable:
       line 18: 0
-      line 19: 2
-      line 20: 9
-      line 21: 18
-      line 22: 25
-      line 23: 29
-      line 20: 32
-      line 26: 38
-      line 19: 45
-      line 28: 51
+      line 19: 4
+      line 20: 14
+      line 21: 27
+      line 22: 37
+      line 23: 42
+      line 20: 45
+      line 26: 54
+      line 19: 62
+      line 28: 71
     Code:
-      stack=2, locals=5, args_size=2
-         0: iconst_m1     
-         1: istore_2      
-         2: iconst_0      
-         3: istore_3      
-         4: iload_3       
-         5: iload_1       
-         6: if_icmpge     51
-         9: iconst_2      
-        10: istore        4
-        12: iload         4
-        14: iload_3       
-        15: if_icmpge     38
-        18: iload_3       
-        19: iload         4
-        21: irem          
-        22: ifne          32
-        25: iload_2       
-        26: iload_3       
-        27: iadd          
-        28: istore_2      
-        29: goto          38
-        32: iinc          4, 1
-        35: goto          12
-        38: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-        41: iload_3       
-        42: invokevirtual #9                  // Method java/io/PrintStream.println:(I)V
-        45: iinc          3, 1
-        48: goto          4
-        51: iload_2       
-        52: ireturn       
+      stack=4, locals=9, args_size=2
+         0: ldc2_w        #12                 // long -1l
+         3: lstore_3      
+         4: lconst_0      
+         5: lstore        5
+         7: lload         5
+         9: lload_1       
+        10: lcmp          
+        11: ifge          71
+        14: ldc2_w        #14                 // long 2l
+        17: lstore        7
+        19: lload         7
+        21: lload         5
+        23: lcmp          
+        24: ifge          54
+        27: lload         5
+        29: lload         7
+        31: lrem          
+        32: lconst_0      
+        33: lcmp          
+        34: ifne          45
+        37: lload_3       
+        38: lload         5
+        40: ladd          
+        41: lstore_3      
+        42: goto          54
+        45: lload         7
+        47: lconst_1      
+        48: ladd          
+        49: lstore        7
+        51: goto          19
+        54: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        57: lload         5
+        59: invokevirtual #11                 // Method java/io/PrintStream.println:(J)V
+        62: lload         5
+        64: lconst_1      
+        65: ladd          
+        66: lstore        5
+        68: goto          7
+        71: lload_3       
+        72: lreturn       
       LineNumberTable:
         line 18: 0
-        line 19: 2
-        line 20: 9
-        line 21: 18
-        line 22: 25
-        line 23: 29
-        line 20: 32
-        line 26: 38
-        line 19: 45
-        line 28: 51
+        line 19: 4
+        line 20: 14
+        line 21: 27
+        line 22: 37
+        line 23: 42
+        line 20: 45
+        line 26: 54
+        line 19: 62
+        line 28: 71
       StackMapTable: number_of_entries = 5
            frame_type = 253 /* append */
-             offset_delta = 4
-        locals = [ int, int ]
-           frame_type = 252 /* append */
              offset_delta = 7
-        locals = [ int ]
-           frame_type = 19 /* same */
+        locals = [ long, long ]
+           frame_type = 252 /* append */
+             offset_delta = 11
+        locals = [ long ]
+           frame_type = 25 /* same */
            frame_type = 250 /* chop */
-          offset_delta = 5
+          offset_delta = 8
            frame_type = 250 /* chop */
-          offset_delta = 12
+          offset_delta = 16
 
 
   public native void fnord();
@@ -211,8 +225,8 @@ Constant pool:
       line 39: 5
     Code:
       stack=1, locals=0, args_size=0
-         0: ldc           #10                 // String fnord
-         2: invokestatic  #11                 // Method java/lang/System.loadLibrary:(Ljava/lang/String;)V
+         0: ldc           #16                 // String fnord
+         2: invokestatic  #17                 // Method java/lang/System.loadLibrary:(Ljava/lang/String;)V
          5: return        
       LineNumberTable:
         line 38: 0

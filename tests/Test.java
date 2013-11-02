@@ -10,14 +10,14 @@ public class Test {
 	}
 
 	public void test() {
-		int y = testfunc(42);
+		long y = testfunc(0xcafebabe);
 		System.out.println(y);
 	}
 
-	public int testfunc(int max) {
-		int y = -1;
-		for (int i = 0; i < max; i++) {
-			for (int k = 2; k < i; ++k) {
+	public long testfunc(long max) {
+		long y = -1;
+		for (long i = 0; i < max; i++) {
+			for (long k = 2; k < i; ++k) {
 				if ((i % k) == 0) {
 					y += i;
 					break;

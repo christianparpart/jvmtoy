@@ -6,3 +6,4 @@ CMakeFiles
 *.o
 cmake_install.cmake
 Makefile
+src/test

@@ -1,26 +1,12 @@
+#include "ConstantPool.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <vector>
-
-enum class ConstantTag {
-	Class = 7,
-	Fieldref = 9,
-	Methodref = 10,
-	InterfaceMethodref = 11,
-	String = 8,
-	Integer = 3,
-	Float = 4,
-	Long = 5,
-	Double = 6,
-	NameAndType = 12,
-	Utf8 = 1,
-	MethodHandle = 15,
-	MethodType = 16,
-	InvokeDynamic = 18,
-};
+#include <string>
+#include <initializer_list>
 
 enum class AccessFlag {
 	Public      = 0x0001,
@@ -36,32 +22,6 @@ enum class AccessFlag {
 uint32_t operator|(AccessFlag a, AccessFlag b) {
 	return ((uint32_t)a) | ((uint32_t)b);
 }
-
-struct Constant {
-	uint8_t tag;
-};
-
-struct Utf8Const : public Constant {
-	uint16_t length;
-	uint8_t* data;
-};
-
-class ConstantPool {
-	std::vector<Constant*> pool;
-
-public:
-	ConstantPool() {
-	}
-
-	~ConstantPool() {
-	}
-
-	void resize(size_t size) {
-		pool.resize(size);
-	}
-
-	Constant* operator[](size_t id) const { return pool[id]; }
-};
 
 class Classfile {
 public:
@@ -87,74 +47,119 @@ void Classfile::open(const char* filename)
 	uint16_t major = read16();
 	printf("version: %d.%d\n", major, minor);
 
-	uint16_t constantCount = read16() - 1;
+	uint16_t constantCount = read16();
 	printf("constant count: %u\n", constantCount);
 
-	for (int i = 0; i < constantCount; ++i) {
+	struct class_const { uint16_t selfIndex; uint16_t nameIndex; };
+	struct member_const { uint16_t selfIndex; ConstantTag tag; uint16_t classIndex; uint16_t nameAndTypeIndex; };
+	struct nameandtype_const { uint16_t selfIndex; uint16_t nameIndex; uint16_t signatureIndex; };
+	struct string_const { uint16_t selfIndex; uint16_t stringIndex; };
+
+	std::vector<class_const> class_consts;
+	std::vector<member_const> member_consts;
+	std::vector<nameandtype_const> nameandtype_consts;
+	std::vector<string_const> string_consts;
+
+	constantPool.resize(constantCount + 1);
+	for (auto& slot: constantPool)
+		slot = nullptr;
+
+	for (uint16_t i = 1; i < constantCount; ++i) {
 		ConstantTag tag = (ConstantTag) read8();
+		printf("[%d] tag: %s\n", i, tos(tag).c_str());
 		switch (tag) {
-			case ConstantTag::Class:
-				read16(); // name_index
+			case ConstantTag::Class: {
+				uint16_t nameIndex = read16();
+				class_consts.push_back({i, nameIndex});
 				break;
+			}
 			case ConstantTag::Fieldref:
-				read16(); // class index
-				read16(); // name and type index
-				break;
 			case ConstantTag::Methodref:
-				read16(); // class index
-				read16(); // name and type index
+			case ConstantTag::InterfaceMethodref: {
+				uint16_t classIndex = read16();
+				uint16_t nameAndTypeIndex = read16();
+				member_consts.push_back({i, tag, classIndex, nameAndTypeIndex});
 				break;
-			case ConstantTag::InterfaceMethodref:
-				read16(); // class index
-				read16(); // name and type index
+			}
+			case ConstantTag::String: {
+				uint16_t stringIndex = read16();
+				string_consts.push_back({i, stringIndex});
 				break;
-			case ConstantTag::String:
-				read16(); // string index
+			}
+			case ConstantTag::Integer: {
+				uint32_t value = read32();
+				printf("\tInteger(%d)\n", value);
+				constantPool[i] = new ConstantInteger(value);
 				break;
-			case ConstantTag::Integer:
+			}
+			case ConstantTag::Float: {
 				read32();
 				break;
-			case ConstantTag::Float:
+			}
+			case ConstantTag::Long: {
+				uint64_t value = read32();
+				value <<= 32;
+				value |= read32();
+				printf("\tLong(%li)\n", value);
+				constantPool[i] = new ConstantLong(value);
+				++i;
+				break;
+			}
+			case ConstantTag::Double: {
 				read32();
-				break;
-			case ConstantTag::Long:
-				read32(); // high
-				read32(); // low
-				break;
-			case ConstantTag::Double:
 				read32();
-				read32();
+				++i;
 				break;
-			case ConstantTag::NameAndType:
-				read16(); // name index
-				read16(); // descriptor index
+			}
+			case ConstantTag::NameAndType: {
+				uint16_t nameIndex = read16();
+				uint16_t signatureIndex = read16();
+				nameandtype_consts.push_back({i, nameIndex, signatureIndex});
 				break;
+			}
 			case ConstantTag::Utf8: {
 				uint16_t length = read16();
 				uint8_t* buf = new uint8_t[length + 1];
 				fread(buf, length, 1, fp);
 				buf[length] = '\0';
-				printf("\tUtf8: %s\n", buf);
-				delete[] buf;
+				constantPool[i] = new ConstantUtf8(length, buf);
+				printf("\t%s\n", ((ConstantUtf8*)constantPool[i])->c_str());
 				break;
 			}
-			case ConstantTag::MethodHandle:
-				read8(); // reference kind
-				read16(); // reference index
+			case ConstantTag::MethodHandle: {
+				uint8_t kind = read8(); // reference kind
+				uint16_t index = read16(); // reference index
+				printf(" (kind: %d, index: %d)\n", kind, index);
 				break;
-			case ConstantTag::MethodType:
+			}
+			case ConstantTag::MethodType: {
 				read16(); // descriptor index
 				break;
+			}
 			case ConstantTag::InvokeDynamic: {
 				uint16_t bootstrapMethodAttrIndex = read16();
 				uint16_t nameAndTypeIndex = read16();
+				printf("\t%d %d\n", bootstrapMethodAttrIndex, nameAndTypeIndex);
 				break;
 			}
 			default: {
+				abort();
 				break;
 			}
 		}
 	}
+
+	for (const auto& rec: class_consts) {
+		ConstantUtf8* name = constantPool.getUtf8(rec.nameIndex);
+		printf("Class #%u: %s\n", rec.selfIndex, name->c_str());
+		constantPool[rec.selfIndex] = new ConstantClass(rec.nameIndex, name);
+	}
+
+	printf("-----------------------------------------\n");
+	printf("CONSTANT_POOL:\n");
+	for (int k = 0; k < constantPool.size(); ++k)
+		printf("\t[%d] %s\n", k, constantPool[k] ? constantPool[k]->to_s().c_str() : "null");
+	printf("-----------------------------------------\n");
 
 	uint16_t accessFlags = read16();
 	printf("access flags: 0x%0x\n", accessFlags);
@@ -165,8 +170,8 @@ void Classfile::open(const char* filename)
 	uint16_t* interfaces = new uint16_t[interfaceCount];
 	fread(interfaces, interfaceCount, sizeof(uint16_t), fp);
 
-	printf("this class: %u\n", thisClass);
-	printf("super class: %u\n", superClass);
+	printf("this class: %s\n", constantPool[thisClass]->to_s().c_str());
+	printf("super class: %s\n", constantPool[superClass]->to_s().c_str());
 	printf("interface count: %u\n", interfaceCount);
 
 	uint16_t fieldCount = read16();
@@ -176,14 +181,17 @@ void Classfile::open(const char* filename)
 		uint16_t accessFlags = read16();
 		uint16_t nameIndex = read16();
 		uint16_t descriptorIndex = read16();
-		uint16_t attributesCount = read16();
+		uint16_t attributeCount = read16();
+		printf("[%d] name: %d\n", i, nameIndex);
 
 		// attribute_info
-		for (int u = 0; u < attributesCount; ++u) {
+		for (int u = 0; u < attributeCount; ++u) {
 			uint16_t nameIndex = read16();
-			uint32_t attributeLength = read32();
-			uint8_t* info = new uint8_t[attributeLength];
-			fread(info, attributeLength, sizeof(uint8_t), fp);
+			uint32_t length = read32();
+			uint8_t* info = new uint8_t[length];
+			fread(info, length, sizeof(uint8_t), fp);
+			ConstantUtf8* name = constantPool.getUtf8(nameIndex);
+			printf("    attribute: %u (%s) %d\n", nameIndex, name->c_str(), length);
 			delete[] info;
 		}
 	}
@@ -195,16 +203,30 @@ void Classfile::open(const char* filename)
 		uint16_t accessFlags = read16();
 		uint16_t nameIndex = read16();
 		uint16_t descriptorIndex = read16();
-		uint16_t attributesCount = read16();
+		uint16_t attributeCount = read16();
+		ConstantUtf8* name = constantPool.getUtf8(nameIndex);
+		printf("[%d] name: %d (%s)\n", i, nameIndex, name->c_str());
 
 		// attribute_info
-		for (int u = 0; u < attributesCount; ++u) {
+		for (int u = 0; u < attributeCount; ++u) {
 			uint16_t nameIndex = read16();
-			uint32_t attributeLength = read32();
-			uint8_t* info = new uint8_t[attributeLength];
-			fread(info, attributeLength, sizeof(uint8_t), fp);
+			ConstantUtf8* name = constantPool.getUtf8(nameIndex);
+			uint32_t length = read32();
+			uint8_t* info = new uint8_t[length];
+			fread(info, length, sizeof(uint8_t), fp);
+			printf("    attribute: %u (%s) %d\n", nameIndex, name->c_str(), length);
 			delete[] info;
 		}
+	}
+
+	uint16_t attributeCount = read16();
+	printf("attribute count: %u\n", attributeCount);
+	for (int i = 0; i < attributeCount; ++i) {
+		uint16_t nameIndex = read16();
+		uint32_t length = read32();
+		uint8_t *info = new uint8_t[length];
+		fread(info, length, sizeof(uint8_t), fp);
+		printf("    %u %d\n", nameIndex, length);
 	}
 
 	fclose(fp);
