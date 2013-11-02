@@ -1,12 +1,18 @@
-JVMtoylet
----------
+JVMtoy
+------
 
 This is a toy project to play with JVM bytecode interpretation.
 
 ### Motivation
 
 While sticking to the topic of compiler development (via LLVM) I could fully live out 
-the goal to get this VM as fast as possible for real work loads.
+the goal to get this VM as fast as possible for real server-oriented work loads,
+especially interesting subjects are
+
+- high concurrency
+- runtime profiling data generation
+- tracing JIT implementation
+- drop in replacement for at least locally interesting software (especially Sqltap).
 
 ### Goals
 
