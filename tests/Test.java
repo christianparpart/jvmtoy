@@ -2,11 +2,17 @@ public class Test {
 	public Test() {
 	}
 
+	public int i = 42;
+
 	public static void main(String[] args) {
 		System.out.println("Hello, World");
 
 		Test t = new Test();
 		t.test();
+	}
+
+	public void addToI(int b) {
+		i += b;
 	}
 
 	public void test() {

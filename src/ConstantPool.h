@@ -90,6 +90,42 @@ struct ConstantUtf8 : public Constant {
 	}
 };
 
+struct ConstantString : public Constant {
+	uint16_t id;
+	ConstantUtf8* value;
+
+	const char* c_str() const { return value->c_str(); }
+
+	ConstantString(uint16_t nameId, ConstantUtf8* v) :
+		Constant(ConstantTag::String),
+		id(nameId),
+		value(v)
+	{}
+
+	virtual std::string to_s() const {
+		char buf[256];
+		snprintf(buf, sizeof(buf), "%s: #%d: %s", tos(tag).c_str(), id, value->c_str());
+		return buf;
+	}
+};
+
+struct ConstantNameAndType  : public Constant {
+	ConstantUtf8* name;
+	ConstantUtf8* signature;
+
+	ConstantNameAndType(ConstantUtf8* _name, ConstantUtf8* _sig) :
+		Constant(ConstantTag::NameAndType),
+		name(_name),
+		signature(_sig)
+	{}
+
+	virtual std::string to_s() const {
+		char buf[256];
+		snprintf(buf, sizeof(buf), "%s: name=%s sig=%s", tos(tag).c_str(), name->c_str(), signature->c_str());
+		return buf;
+	}
+};
+
 struct ConstantClass : public Constant {
 	uint16_t id;
 	ConstantUtf8* name;
@@ -103,6 +139,28 @@ struct ConstantClass : public Constant {
 	virtual std::string to_s() const {
 		char buf[256];
 		snprintf(buf, sizeof(buf), "%s: #%d: %s", tos(tag).c_str(), id, name->c_str());
+		return buf;
+	}
+};
+
+struct ConstantMember : public Constant {
+	ConstantClass* classDef;
+	ConstantNameAndType* memberDef;
+
+	ConstantMember(ConstantTag _tag, ConstantClass* _classDef, ConstantNameAndType* _memberDef) :
+		Constant(_tag),
+		classDef(_classDef),
+		memberDef(_memberDef)
+	{}
+
+	virtual std::string to_s() const {
+		char buf[255];
+		snprintf(buf, sizeof(buf), "%s: %s.%s:%s",
+			tos(tag).c_str(),
+			classDef->name->c_str(),
+			memberDef->name->c_str(),
+			memberDef->signature->c_str()
+		);
 		return buf;
 	}
 };
@@ -123,11 +181,29 @@ public:
 	const Constant* operator[](size_t id) const { return pool[id]; }
 	Constant*& operator[](size_t id) { return pool[id]; }
 
-	ConstantUtf8* getUtf8(size_t id) {
-		if (id < 1 || id >= pool.size() || pool[id]->tag != ConstantTag::Utf8)
+	Constant* get(ConstantTag tag, size_t id) {
+		if (id < 1 || id >= pool.size() || pool[id]->tag != tag)
 			return nullptr;
 
-		return static_cast<ConstantUtf8*>(pool[id]);
+		return pool[id];
 	}
+
+	template<typename T> T* get(size_t id);
 };
+
+template<>
+inline ConstantUtf8* ConstantPool::get<ConstantUtf8>(size_t id) {
+	return dynamic_cast<ConstantUtf8*>(get(ConstantTag::Utf8, id));
+}
+
+template<>
+inline ConstantClass* ConstantPool::get<ConstantClass>(size_t id) {
+	return dynamic_cast<ConstantClass*>(get(ConstantTag::Class, id));
+}
+
+
+
+
+
+
 
