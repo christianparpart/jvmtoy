@@ -218,8 +218,10 @@ bool Class::_load(const char* filename)
 	thisClass_ = constantPool.get<ConstantClass>(thisClassId);
 	thisClassName_ = thisClass_->name->c_str();
 
-	superClassName_ = constantPool.get<ConstantClass>(superClassId)->name->c_str();
-	superClass_ = nullptr; //Class::load(superClassName_);
+	if (superClassId != 0) {
+		superClassName_ = constantPool.get<ConstantClass>(superClassId)->name->c_str();
+		superClass_ = nullptr; //Class::load(superClassName_);
+	}
 
 	// class fields
 	uint16_t fieldCount = read16();
@@ -315,13 +317,4 @@ void Class::dump()
 	for (int k = 0; k < constantPool.size(); ++k)
 		printf("\t[%d] %s\n", k, constantPool[k] ? constantPool[k]->to_s().c_str() : "null");
 	printf("FIELDS: #%zu\n", fields_.size());
-}
-
-int main(int argc, const char* argv[])
-{
-	Class* c = Class::load(argc == 2 ? argv[1] : "tests/Test.class");
-	c->dump();
-	delete c;
-
-	return 0;
 }
