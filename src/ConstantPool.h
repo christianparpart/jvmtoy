@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <cstring>
 #include <vector>
 #include <stdint.h>
 
@@ -82,6 +83,7 @@ struct ConstantUtf8 : public Constant {
 	~ConstantUtf8() { delete[] data; }
 
 	const char* c_str() const { return (const char*) data; }
+	size_t size() const { return length; }
 
 	virtual std::string to_s() const {
 		char buf[256];
@@ -89,6 +91,14 @@ struct ConstantUtf8 : public Constant {
 		return buf;
 	}
 };
+
+inline bool equals(const ConstantUtf8* a, const char* b) {
+	return std::strcmp(a->c_str(), b) == 0;
+}
+
+inline bool equals(const ConstantUtf8& a, const char* b) {
+	return std::strcmp(a.c_str(), b) == 0;
+}
 
 struct ConstantString : public Constant {
 	uint16_t id;

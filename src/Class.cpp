@@ -45,8 +45,8 @@ std::string tos(AccessFlags flags) {
 	return s;
 }
 
-Class::Class(const std::string& filename) :
-	filename_(filename)
+Class::Class() :
+	sourceFile_()
 {
 }
 
@@ -56,17 +56,17 @@ Class::~Class()
 
 Class* Class::load(const char* filename)
 {
-	Class* c = new Class(filename);
-	if (c->load())
+	Class* c = new Class();
+	if (c->_load(filename))
 		return c;
 
 	delete c;
 	return nullptr;
 }
 
-bool Class::load()
+bool Class::_load(const char* filename)
 {
-	FILE* fp = fopen(filename_.c_str(), "rb");
+	FILE* fp = fopen(filename, "rb");
 	assert(fp != nullptr);
 
 	auto read8  = [&]() -> uint8_t { return fgetc(fp); };
@@ -79,8 +79,8 @@ bool Class::load()
 		// wrong classfile magic
 		return false;
 
-	uint16_t minor = read16();
-	uint16_t major = read16();
+	minor_ = read16();
+	major_ = read16();
 
 	uint16_t constantCount = read16();
 
@@ -121,7 +121,6 @@ bool Class::load()
 			}
 			case ConstantTag::Integer: {
 				uint32_t value = read32();
-				printf("\tInteger(%d)\n", value);
 				constantPool[i] = new ConstantInteger(value);
 				break;
 			}
@@ -160,7 +159,7 @@ bool Class::load()
 			case ConstantTag::MethodHandle: {
 				uint8_t kind = read8(); // reference kind
 				uint16_t index = read16(); // reference index
-				printf(" (kind: %d, index: %d)\n", kind, index);
+				// TODO
 				break;
 			}
 			case ConstantTag::MethodType: {
@@ -170,10 +169,11 @@ bool Class::load()
 			case ConstantTag::InvokeDynamic: {
 				uint16_t bootstrapMethodAttrIndex = read16();
 				uint16_t nameAndTypeIndex = read16();
-				printf("\t%d %d\n", bootstrapMethodAttrIndex, nameAndTypeIndex);
+				// TODO
 				break;
 			}
 			default: {
+				assert(!"FIXME");
 				abort();
 				break;
 			}
@@ -202,33 +202,28 @@ bool Class::load()
 		constantPool[rec.selfIndex] = new ConstantMember(rec.tag, classRef, nametypeRef);
 	}
 
-	AccessFlags accessFlags = (AccessFlags) read16();
+	accessFlags_ = (AccessFlags) read16();
 
 	uint16_t thisClassId = read16();
 	uint16_t superClassId = read16();
 	uint16_t interfaceCount = read16();
-	uint16_t* interfaces = new uint16_t[interfaceCount];
-	fread(interfaces, interfaceCount, sizeof(uint16_t), fp);
+	interfaceIds_.resize(interfaceCount);
+	interfaces_.resize(interfaceIds_.size());
+	for (size_t i = 0; i < interfaces_.size(); ++i) {
+		uint16_t id = read16();
+		interfaceIds_[i] = id;
+		interfaces_[i] = nullptr;
+	}
 
-	ConstantClass* thisClass = constantPool.get<ConstantClass>(thisClassId);
-	ConstantClass* superClass = constantPool.get<ConstantClass>(superClassId);
+	thisClass_ = constantPool.get<ConstantClass>(thisClassId);
+	thisClassName_ = thisClass_->name->c_str();
 
-	printf("magic: 0x%04x\n", magic);
-	printf("version: %d.%d\n", major, minor);
-	printf("constant count: %u\n", constantCount);
-	printf("access flags: 0x%0x %s\n", accessFlags, tos(accessFlags).c_str());
-	printf("this class: %s\n", thisClass->name->c_str());
-	printf("super class: %s\n", superClass->name->c_str());
-	printf("interface count: %u\n", interfaceCount);
-	printf("-----------------------------------------\n");
-	printf("CONSTANT_POOL:\n");
-	for (int k = 0; k < constantPool.size(); ++k)
-		printf("\t[%d] %s\n", k, constantPool[k] ? constantPool[k]->to_s().c_str() : "null");
-	printf("-----------------------------------------\n");
+	superClassName_ = constantPool.get<ConstantClass>(superClassId)->name->c_str();
+	superClass_ = nullptr; //Class::load(superClassName_);
 
+	// class fields
 	uint16_t fieldCount = read16();
-	printf("field count: %u\n", fieldCount);
-
+	fields_.resize(fieldCount);
 	for (int i = 0; i < fieldCount; ++i) {
 		AccessFlags accessFlags = (AccessFlags) read16();
 		uint16_t nameIndex = read16();
@@ -238,8 +233,12 @@ bool Class::load()
 		ConstantUtf8* name = constantPool.get<ConstantUtf8>(nameIndex);
 		ConstantUtf8* desc = constantPool.get<ConstantUtf8>(descriptorIndex);
 
+		Field field(name, desc);
+
+		fields_[i] = nullptr; // TODO
+
 		printf("[%d] name: %s.%s: %s %s\n", i,
-			thisClass->name->c_str(),
+			thisClass_->name->c_str(),
 			name->c_str(),
 			desc->c_str(),
 			tos(accessFlags).c_str()
@@ -260,7 +259,6 @@ bool Class::load()
 
 	uint16_t methodCount = read16();
 	printf("method count: %u\n", methodCount);
-
 	for (int i = 0; i < methodCount; ++i) {
 		AccessFlags accessFlags = (AccessFlags) read16();
 		ConstantUtf8* name = constantPool.get<ConstantUtf8>(read16());
@@ -289,14 +287,15 @@ bool Class::load()
 	printf("attribute count: %u\n", attributeCount);
 	for (int i = 0; i < attributeCount; ++i) {
 		uint16_t nameId = read16();
-		uint32_t length = read32();
-		uint8_t *info = new uint8_t[length];
+		/*uint32_t length =*/ read32();
 
 		ConstantUtf8* name = constantPool.get<ConstantUtf8>(nameId);
-		fread(info, length, sizeof(uint8_t), fp);
-		printf("    %s (length: %u) ", name->c_str(), length);
-		//for (int i = 0; i < length; ++i) printf("\\x%02x", info[i]);
-		printf("\n");
+
+		if (equals(name, "SourceFile")) {
+			uint16_t sourceFileId = read16();
+			ConstantUtf8* sourceFile = constantPool.get<ConstantUtf8>(sourceFileId);
+			sourceFile_ = sourceFile->c_str();
+		}
 	}
 
 	fclose(fp);
@@ -304,9 +303,24 @@ bool Class::load()
 	return true;
 }
 
+void Class::dump()
+{
+	printf("-----------------------------------------------\n");
+	printf("Version: %d.%d\n", major_, minor_);
+	printf("This class: %s\n", thisClassName_.c_str());
+	printf("Super class: %s\n", superClassName_.c_str());
+	printf("Access flags: 0x%0x %s\n", accessFlags_, tos(accessFlags_).c_str());
+	printf("Interface count: %zu\n", interfaces_.size());
+	printf("CONSTANT_POOL:\n");
+	for (int k = 0; k < constantPool.size(); ++k)
+		printf("\t[%d] %s\n", k, constantPool[k] ? constantPool[k]->to_s().c_str() : "null");
+	printf("FIELDS: #%zu\n", fields_.size());
+}
+
 int main(int argc, const char* argv[])
 {
 	Class* c = Class::load(argc == 2 ? argv[1] : "tests/Test.class");
+	c->dump();
 	delete c;
 
 	return 0;
