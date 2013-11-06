@@ -5,6 +5,9 @@
 #include <vector>
 #include <stdint.h>
 
+class JvmEnv;
+class Class;
+
 enum class ConstantTag {
 	Class = 7,
 	Fieldref = 9,
@@ -49,6 +52,8 @@ struct Constant {
 
 	//! Returns a debug-friendly string representation of given constant.
 	virtual std::string to_s() const = 0;
+
+	virtual bool resolve(JvmEnv* env) = 0;
 };
 
 struct ConstantInteger : public Constant {
@@ -61,6 +66,10 @@ struct ConstantInteger : public Constant {
 		snprintf(buf, sizeof(buf), "%s: %i", tos(tag).c_str(), value);
 		return buf;
 	}
+
+	virtual bool resolve(JvmEnv* env) {
+		return true;
+	}
 };
 
 struct ConstantLong : public Constant {
@@ -72,6 +81,10 @@ struct ConstantLong : public Constant {
 		char buf[64];
 		snprintf(buf, sizeof(buf), "%s: 0x%08llX (%li)", tos(tag).c_str(), (value & 0xFFFFFFFFllu), value);
 		return buf;
+	}
+
+	virtual bool resolve(JvmEnv* env) {
+		return true;
 	}
 };
 
@@ -90,14 +103,18 @@ struct ConstantUtf8 : public Constant {
 		snprintf(buf, sizeof(buf), "%s: %s", tos(tag).c_str(), data);
 		return buf;
 	}
+
+	virtual bool resolve(JvmEnv* env) {
+		return true;
+	}
 };
 
 inline bool equals(const ConstantUtf8* a, const char* b) {
-	return std::strcmp(a->c_str(), b) == 0;
+	return (!a && !b) || (a && b && std::strcmp(a->c_str(), b) == 0);
 }
 
 inline bool equals(const ConstantUtf8& a, const char* b) {
-	return std::strcmp(a.c_str(), b) == 0;
+	return (!&a && !b) || (&a && b && std::strcmp(a.c_str(), b) == 0);
 }
 
 struct ConstantString : public Constant {
@@ -117,6 +134,11 @@ struct ConstantString : public Constant {
 		snprintf(buf, sizeof(buf), "%s: #%d: %s", tos(tag).c_str(), id, value->c_str());
 		return buf;
 	}
+
+	virtual bool resolve(JvmEnv* env) {
+		// because we are already resolved at construction time.
+		return true;
+	}
 };
 
 struct ConstantNameAndType  : public Constant {
@@ -134,16 +156,23 @@ struct ConstantNameAndType  : public Constant {
 		snprintf(buf, sizeof(buf), "%s: name=%s sig=%s", tos(tag).c_str(), name->c_str(), signature->c_str());
 		return buf;
 	}
+
+	virtual bool resolve(JvmEnv* env) {
+		// TODO we may want to load classes for signature element types
+		return true;
+	}
 };
 
 struct ConstantClass : public Constant {
 	uint16_t id;
 	ConstantUtf8* name;
+	Class* resolvedClass;
 
 	ConstantClass(uint16_t nameId, ConstantUtf8* value) :
 		Constant(ConstantTag::Class),
 		id(nameId),
-		name(value)
+		name(value),
+		resolvedClass(nullptr)
 	{}
 
 	virtual std::string to_s() const {
@@ -151,6 +180,8 @@ struct ConstantClass : public Constant {
 		snprintf(buf, sizeof(buf), "%s: #%d: %s", tos(tag).c_str(), id, name->c_str());
 		return buf;
 	}
+
+	virtual bool resolve(JvmEnv* env);
 };
 
 struct ConstantMember : public Constant {
@@ -172,6 +203,10 @@ struct ConstantMember : public Constant {
 			memberDef->signature->c_str()
 		);
 		return buf;
+	}
+
+	virtual bool resolve(JvmEnv* env) {
+		return classDef->resolve(env) && memberDef->resolve(env);
 	}
 };
 
@@ -210,10 +245,3 @@ template<>
 inline ConstantClass* ConstantPool::get<ConstantClass>(size_t id) {
 	return dynamic_cast<ConstantClass*>(get(ConstantTag::Class, id));
 }
-
-
-
-
-
-
-
