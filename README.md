@@ -46,7 +46,17 @@ This may be some loosely defined priority list on what would have to be implemen
 3. exception handling
 4. functional `System.out.println()`
 5. basic JNI, maybe let libjvmrt use this to expose system implementations, too
-6. `java.lang.reflect.*`
-7. `java.lang.Thread` and related
+6. basic JVMTI?
+7. ensure we can use rt.jar
 8. basic JIT compiling via LLVM (-Xllvm to enable it)
 9. basic JIT compiling for x86-64 by hand
+
+#### Milestones
+
+- Classfile loader
+- Byte Code Interpreter
+- JNI - Java Native Interface
+- JVMTI - Java Virtual Machine Tool Interface
+- JIT compiler (based on LLVM)
+- Integration into OpenJDK
+
