@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-class JvmEnv;
 class Class;
 
 class Field {
@@ -39,6 +38,7 @@ public:
 class Method {
 public:
 	friend class Class;
+	friend class VMClassLoader;
 
 	struct ExceptionHandler {
 		uint16_t start;
@@ -135,7 +135,6 @@ public:
 
 class Class {
 private:
-	JvmEnv* env_;
 	std::string sourceFile_;
 	int major_;
 	int minor_;
@@ -154,12 +153,10 @@ private:
 	std::vector<Method*> methods_;
 
 private:
-	explicit Class(JvmEnv* env);
+	Class();
 	~Class();
 
-	bool load(const std::string& filename);
-
-	friend class JvmEnv;
+	friend class VMClassLoader;
 
 public:
 	ConstantPool constantPool;

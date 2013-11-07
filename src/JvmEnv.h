@@ -5,9 +5,11 @@
 #include <unordered_map>
 
 class Class;
+class VMClassLoader;
 
 class JvmEnv {
 private:
+	VMClassLoader* classLoader_;
 	std::vector<std::string> classpaths_;
 	std::unordered_map<std::string, Class*> classes_;
 
