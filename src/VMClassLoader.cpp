@@ -247,9 +247,7 @@ Class* VMClassLoader::defineClass(const char* className, const uint8_t* classfil
 	for (size_t i = 0; i < interfaceCount; ++i) {
 		uint16_t id = read16();
 		c->interfaceIds_[i] = id;
-		ConstantClass* interface = c->constantPool.get<ConstantClass>(id);
-		printf("interface #%zu: #%d %s\n", i, id, interface ? interface->name->c_str() : "???");
-		c->interfaces_[i] = nullptr; //env_->getClass(interface->name->c_str());
+		c->interfaces_[i] = nullptr;
 	}
 
 	c->thisClass_ = c->constantPool.get<ConstantClass>(thisClassId);
@@ -257,7 +255,7 @@ Class* VMClassLoader::defineClass(const char* className, const uint8_t* classfil
 
 	if (superClassId != 0) {
 		c->superClassName_ = c->constantPool.get<ConstantClass>(superClassId)->name->c_str();
-		c->superClass_ = nullptr; //env_->getClass(superClassName_.c_str());
+		c->superClass_ = nullptr;
 	}
 
 	// class fields
@@ -388,4 +386,21 @@ Class* VMClassLoader::defineClass(const char* className, const uint8_t* classfil
 void VMClassLoader::resolveClass(Class* c)
 {
 	// link class c, resolving any unresolved symbols
+
+	for (size_t i = 0; i < c->interfaceIds_.size(); ++i) {
+		if (c->interfaces_[i])
+			continue;
+
+		uint16_t id = c->interfaceIds_[i];
+		ConstantClass* interface = c->constantPool.get<ConstantClass>(id);
+		printf("interface #%zu: #%d %s\n", i, id, interface ? interface->name->c_str() : "???");
+		c->interfaces_[i] = findClass(interface->name->c_str());
+	}
+
+	if (!c->superClass_) {
+		c->superClass_ = findClass(c->superClassName_.c_str());
+	}
+
+	// TODO
+	// field/method signature types ...
 }
