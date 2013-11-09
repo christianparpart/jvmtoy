@@ -7,6 +7,7 @@
 #include <vector>
 
 class Class;
+class JObject;
 
 class Field {
 private:
@@ -176,5 +177,7 @@ public:
 	void resolve();
 
 	void dump();
+
+	JObject* newInstance();
 };
 

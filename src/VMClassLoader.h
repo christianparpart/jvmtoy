@@ -20,7 +20,10 @@ public:
 
 	void addClassPath(const std::string& path);
 
+	Class* findLoadedClass(const char* name);
 	Class* findClass(const char* name);
 	Class* defineClass(const char* name, const uint8_t* classfile, size_t size);
 	void resolveClass(Class* c);
+
+	Class* loadClass(const char* name, bool resolve);
 };

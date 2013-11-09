@@ -35,13 +35,19 @@ void VMClassLoader::addClassPath(const std::string& path)
 	classpaths_.push_back(path);
 }
 
-Class* VMClassLoader::findClass(const char* className)
+Class* VMClassLoader::findLoadedClass(const char* className)
 {
 	auto i = classes_.find(className);
-	if (i != classes_.end()) {
-		printf("findClass(%s) -> found\n", className);
+	if (i != classes_.end())
 		return i->second;
-	}
+
+	return nullptr;
+}
+
+Class* VMClassLoader::findClass(const char* className)
+{
+	if (Class* c = findLoadedClass(className))
+		return c;
 
 	std::string normalizedClassName = className;
 	for (int i = 0; i < normalizedClassName.size(); ++i)
@@ -239,8 +245,19 @@ Class* VMClassLoader::defineClass(const char* className, const uint8_t* classfil
 
 	c->flags_ = (ClassFlags) read16();
 
+	// this class
 	uint16_t thisClassId = read16();
+	c->thisClass_ = c->constantPool.get<ConstantClass>(thisClassId);
+	c->thisClassName_ = c->thisClass_->name->c_str();
+
+	// super class
 	uint16_t superClassId = read16();
+	if (superClassId != 0) {
+		c->superClassName_ = c->constantPool.get<ConstantClass>(superClassId)->name->c_str();
+		c->superClass_ = nullptr;
+	}
+
+	// super interfaces
 	uint16_t interfaceCount = read16();
 	c->interfaceIds_.resize(interfaceCount);
 	c->interfaces_.resize(c->interfaceIds_.size());
@@ -248,14 +265,6 @@ Class* VMClassLoader::defineClass(const char* className, const uint8_t* classfil
 		uint16_t id = read16();
 		c->interfaceIds_[i] = id;
 		c->interfaces_[i] = nullptr;
-	}
-
-	c->thisClass_ = c->constantPool.get<ConstantClass>(thisClassId);
-	c->thisClassName_ = c->thisClass_->name->c_str();
-
-	if (superClassId != 0) {
-		c->superClassName_ = c->constantPool.get<ConstantClass>(superClassId)->name->c_str();
-		c->superClass_ = nullptr;
 	}
 
 	// class fields
@@ -285,6 +294,7 @@ Class* VMClassLoader::defineClass(const char* className, const uint8_t* classfil
 		}
 	}
 
+	// class methods
 	uint16_t methodCount = read16();
 	for (int i = 0; i < methodCount; ++i) {
 		MethodFlags flags = (MethodFlags) read16();
@@ -363,6 +373,7 @@ Class* VMClassLoader::defineClass(const char* className, const uint8_t* classfil
 		}
 	}
 
+	// class attributes
 	uint16_t attributeCount = read16();
 	for (int i = 0; i < attributeCount; ++i) {
 		uint16_t nameId = read16();
@@ -392,9 +403,10 @@ void VMClassLoader::resolveClass(Class* c)
 			continue;
 
 		uint16_t id = c->interfaceIds_[i];
-		ConstantClass* interface = c->constantPool.get<ConstantClass>(id);
-		printf("interface #%zu: #%d %s\n", i, id, interface ? interface->name->c_str() : "???");
-		c->interfaces_[i] = findClass(interface->name->c_str());
+		if (ConstantClass* interface = c->constantPool.get<ConstantClass>(id)) {
+			printf("linking interface #%zu: #%d %s\n", i, id, interface->name->c_str());
+			c->interfaces_[i] = findClass(interface->name->c_str());
+		}
 	}
 
 	if (!c->superClass_) {
@@ -403,4 +415,16 @@ void VMClassLoader::resolveClass(Class* c)
 
 	// TODO
 	// field/method signature types ...
+}
+
+Class* VMClassLoader::loadClass(const char* className, bool resolve)
+{
+	Class* c = findClass(className);
+	if (!c)
+		return nullptr;
+
+	if (resolve)
+		resolveClass(c);
+
+	return c;
 }
