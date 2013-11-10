@@ -23,7 +23,6 @@ VMClassLoader::VMClassLoader() :
 	classes_(),
 	classpaths_()
 {
-	classpaths_.push_back(".");
 }
 
 VMClassLoader::~VMClassLoader()

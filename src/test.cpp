@@ -5,6 +5,7 @@
 int main(int argc, const char* argv[])
 {
 	JvmEnv jenv;
+	jenv.addClassPath(".");
 	jenv.addClassPath("./tests");
 	jenv.addClassPath("/home/trapni/projects/jvmtoy/classpath-rt");
 
